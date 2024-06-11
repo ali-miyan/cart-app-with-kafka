@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import Product from '../product-service/ProductModel';
-import { sendProductCreatedEvent } from './productProducer';
+import { AddToCartEvent } from './productProducer';
 import cookieParser from 'cookie-parser';
 import {authenticate} from '@alimiyn/authservice'
 
@@ -29,7 +29,6 @@ app.post('/add-products',authenticate, async (req: Request, res: Response) => {
 
   try {
     const product = await newProduct.save();
-    sendProductCreatedEvent(product);
     res.status(200).send(newProduct);
   } catch (error) {
     console.error('Error creating product:', error);
@@ -43,6 +42,24 @@ app.get('/products',authenticate, async (req: Request, res: Response) => {
     res.json(products);
   } catch (error) {
     res.status(500).send({ error: 'Error fetching products' });
+  }
+});
+
+app.post('/add-to-cart',authenticate, async (req: Request, res: Response) => {
+  const { userId, productId } = req.body;
+  try {
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).send({ error: "Product not found" });
+    }
+
+    AddToCartEvent(product,userId)
+
+    res.status(200).send('successfully added to cart');
+  } catch (error) {
+    console.error("Error adding to cart:", error);
+    res.status(500).send({ error: "Error adding to cart" });
   }
 });
 

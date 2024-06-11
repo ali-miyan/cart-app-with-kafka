@@ -5,7 +5,6 @@ import User, { userModel } from "./UserModel";
 import jwt from "jsonwebtoken";
 import cookieParser from 'cookie-parser';
 import { authenticate } from '@alimiyn/authservice';
-import { sendUserCreatedEvent } from "./userProducer";
 
 
 const app = express();
@@ -33,8 +32,7 @@ app.post("/signup", async (req: Request, res: Response) => {
 
   try {
     const user = await newUser.save();
-    sendUserCreatedEvent(user)
-    res.status(200).send(newUser);
+    res.status(200).send(user);
   } catch (error) {
     console.error("Error creating user:", error);
     res.status(500).send({ error: "Error creating user" });

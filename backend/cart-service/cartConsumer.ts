@@ -1,24 +1,17 @@
-import User from "./models/UserModel";
-import Product from "./models/ProductModel";
 import CartModel from "./models/CartModel";
 import { consumer } from "./kafkaConfig";
+import { addToCart } from "./index";
 
 
 consumer.on("message", async function (message:any) {
   console.log("Received message:", message);
   try {
-    if (message.topic === "user-created") {
-      const userData = JSON.parse(message.value);
-      console.log("User created:", userData);
-      const user = new User({ _id:userData._id, name: userData.name });
-      const cartUpdate = new CartModel({ userId:userData._id, name: userData.name });
-      await cartUpdate.save();
-      await user.save();
-    } else if (message.topic === "product-created") {
-      const productData = JSON.parse(message.value);
-      console.log("Product created:", productData);
-      const product = new Product({ _id:productData._id, name: productData.name, price: productData.price });
-      await product.save();
+    if (message.topic === "product-created") {
+
+      const parsedMessage = JSON.parse(message.value);
+      const { product, userId } = parsedMessage;
+
+      await addToCart(userId, product);
     }
 
     consumer.commit((err, data) => {

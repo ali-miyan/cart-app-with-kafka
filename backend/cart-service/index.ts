@@ -1,10 +1,8 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
 import mongoose from "mongoose";
-import Cart from "./models/CartModel";
+import Cart, { CartItem } from "./models/CartModel";
 import consumer from "./cartConsumer";
-import UserModel from "./models/UserModel";
-import Product from "./models/ProductModel";
 import cookieParser from 'cookie-parser';
 import {authenticate} from '@alimiyn/authservice'
 
@@ -38,53 +36,22 @@ mongoose
     console.error("Error connecting to MongoDB:", error);
   });
 
-  app.post("/add-to-cart", authenticate, async (req, res) => {
-    const { userId, productId } = req.body;
+  export async function addToCart(userId: string, product: CartItem) {
     try {
-      const product = await Product.findById(productId);
-      if (!product) {
-        return res.status(404).send({ error: "Product not found" });
-      }
-  
       let cart = await Cart.findOne({ userId });
   
       if (!cart) {
-        cart = new Cart({
-          userId,
-          products: [
-            {
-              _id: product._id,
-              name: product.name,
-              price: product.price,
-            },
-          ],
-        });
-      } else {
-        const existingProductIndex = cart.products.findIndex(
-          (item) => item._id.toString() === productId
-        );
-  
-        if (existingProductIndex !== -1) {
-          console.log('lol');
-          
-          return res.json({ error: true });
-        }
-  
-        cart.products.push({
-          _id: product._id,
-          name: product.name,
-          price: product.price,
-        });
+        cart = new Cart({ userId, products: [] });
       }
   
-      await cart.save();
+      cart.products.push(product);
   
-      res.status(200).send(cart);
+      await cart.save();
+      console.log(`Product added to cart for user ${userId}`);
     } catch (error) {
-      console.error("Error adding to cart:", error);
-      res.status(500).send({ error: "Error adding to cart" });
+      console.error("Error adding product to cart:", error);
     }
-  });
+  }
   
 
 app.get("/cart/:id",authenticate, async (req: Request, res: Response) => {

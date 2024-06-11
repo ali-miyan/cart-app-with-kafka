@@ -1,8 +1,13 @@
 import { producer } from './kafkaConfig';
 import { IProduct } from './ProductModel';
 
-function sendProductCreatedEvent(product:IProduct) {
-    producer.send([{ topic: 'product-created', messages: [JSON.stringify(product)] }], function (err, data) {
+function AddToCartEvent(product: IProduct, userId: string) {
+    const message = {
+        product,
+        userId
+    };
+    
+    producer.send([{ topic: 'product-created', messages: [JSON.stringify(message)] }], function (err, data) {
         if (err) {
             console.error('Error sending product created event:', err);
         } else {
@@ -11,4 +16,4 @@ function sendProductCreatedEvent(product:IProduct) {
     });
 }
 
-export { sendProductCreatedEvent };
+export { AddToCartEvent };

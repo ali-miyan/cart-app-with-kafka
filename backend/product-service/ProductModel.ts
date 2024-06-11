@@ -2,7 +2,7 @@ import mongoose, { Document, Schema } from "mongoose";
 
 export interface IProduct extends Document {
   name: string;
-  price: Number;
+  price: number;
 }
 
 const ProductSchema: Schema = new Schema({

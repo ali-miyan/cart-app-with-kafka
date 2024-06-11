@@ -59,7 +59,7 @@ const ProductComponent: React.FC = () => {
 
     console.log('dd');
     
-    const response = await axios.post(`http://localhost:4002/add-to-cart`,{
+    const response = await axios.post(`http://localhost:4001/add-to-cart`,{
       userId:userId,
       productId:id
     },{
